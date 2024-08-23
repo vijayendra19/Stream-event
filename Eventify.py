@@ -94,9 +94,17 @@ def send_email(to_email, event):
 
 # Function to track responses
 def track_responses():
-    st.write('### Guest List')
-    for guest in st.session_state['guests']:
-        st.write(f"{guest['name']} ({guest['email']})")
+    st.write('### Events and Guest List')
+    for event in st.session_state['events']:
+        st.write(f"**Event Name:** {event['name']}")
+        st.write(f"**Date:** {event['date']}")
+        st.write(f"**Time:** {event['time']}")
+        st.write(f"**Location:** {event['location']}")
+        st.write(f"**Description:** {event['description']}")
+        st.write('**Guest List:**')
+        for guest in st.session_state['guests']:
+            st.write(f"- {guest['name']} ({guest['email']})")
+        st.write('---')
 
 # Streamlit app layout
 st.title('Event Planning App')
