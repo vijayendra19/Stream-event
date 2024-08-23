@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # Initialize session state
 if 'events' not in st.session_state:
@@ -42,6 +44,54 @@ def manage_guests():
             })
             st.success('Guest added successfully!')
 
+# Function to send invitations
+def send_invitations():
+    st.write('### Send Invitations')
+    event_options = [event['name'] for event in st.session_state['events']]
+    selected_event = st.selectbox('Select Event', event_options)
+    
+    if st.button('Send Invitations'):
+        event = next(event for event in st.session_state['events'] if event['name'] == selected_event)
+        for guest in st.session_state['guests']:
+            send_email(guest['email'], event)
+        st.success('Invitations sent successfully!')
+
+# Function to send email
+def send_email(to_email, event):
+    from_email = 'your_email@example.com'
+    from_password = 'your_password'
+    
+    subject = f"Invitation to {event['name']}"
+    body = f"""
+    You are invited to {event['name']}!
+    
+    Date: {event['date']}
+    Time: {event['time']}
+    Location: {event['location']}
+    
+    Description:
+    {event['description']}
+    
+    Please RSVP.
+    """
+    
+    msg = MIMEMultipart()
+    msg['From'] = from_email
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
+    
+    try:
+        server = smtplib.SMTP('smtp.example.com', 587)
+        server.starttls()
+        server.login(from_email, from_password)
+        text = msg.as_string()
+        server.sendmail(from_email, to_email, text)
+        server.quit()
+        st.write(f"Invitation sent to {to_email}")
+    except Exception as e:
+        st.error(f"Failed to send email: {e}")
+
 # Function to track responses
 def track_responses():
     st.write('### Guest List')
@@ -51,12 +101,8 @@ def track_responses():
 # Streamlit app layout
 st.title('Event Planning App')
 
-# Add an image to the sidebar
-image = Image.open('path_to_your_image.jpg')
-st.sidebar.image(image, caption='Event Planning', use_column_width=True)
-
 st.sidebar.title('Navigation')
-option = st.sidebar.selectbox('Select a page:', ['Create Event', 'Manage Guests', 'Track Responses'])
+option = st.sidebar.selectbox('Select a page:', ['Create Event', 'Manage Guests', 'Send Invitations', 'Track Responses'])
 
 if option == 'Create Event':
     st.header('Create Event')
@@ -64,6 +110,9 @@ if option == 'Create Event':
 elif option == 'Manage Guests':
     st.header('Manage Guests')
     manage_guests()
+elif option == 'Send Invitations':
+    st.header('Send Invitations')
+    send_invitations()
 elif option == 'Track Responses':
     st.header('Track Responses')
     track_responses()
