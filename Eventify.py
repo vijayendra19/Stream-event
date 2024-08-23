@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
-import smtplib
+import pyperclip
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import smtplib
 
 # Initialize session state
 if 'events' not in st.session_state:
@@ -55,6 +56,11 @@ def send_invitations():
         for guest in st.session_state['guests']:
             send_email(guest['email'], event)
         st.success('Invitations sent successfully!')
+
+    if st.button('Copy Invitation Link'):
+        event_link = f"http://example.com/event/{selected_event.replace(' ', '_')}"
+        pyperclip.copy(event_link)
+        st.success('Invitation link copied to clipboard!')
 
 # Function to send email
 def send_email(to_email, event):
